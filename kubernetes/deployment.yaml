@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signaling-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: signaling
+  template:
+    metadata:
+      labels:
+        app: signaling
+    spec:
+      containers:
+      - name: signaling
+        image: yassinsiouda/signaling:latest
+        ports:
+        - containerPort: 3000
+        env:
+          - name: PORT
+            value: "3000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: signaling-service
+spec:
+  selector:
+    app: signaling
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: signaling-ingress
+spec:
+  rules:
+  - host: signal.mydomain.club
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: signaling-service
+            port:
+              number: 80
